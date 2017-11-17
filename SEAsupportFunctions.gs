@@ -1,180 +1,269 @@
-function onFormSubmit(){
+function addAffiliation(newAff){
   //------------------------------------------------------------------------------------------
-  // Activates on submission of the Dolphin Quest Sample Entry Assistant form and:
-  //   - gathers the form responses from the linked DQ SEA data spreadsheet;
-  //   - fills in any known values skipped during form entry as known for a given patient;
-  //   - fills the report template
-  //   - emails a pdf of the completed template to the form preparer and Colleen.Bryan@nist.gov
+  // Adds a new affiliation from form responses.
   //------------------------------------------------------------------------------------------
   //
-  var testingmode = false;
-  //
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Form Responses');
-  var responses = sheet.getDataRange().getValues();
-  var colsForPatients = [4,4,5,6,7,8,9,10,11,12];
-  var colsForFacilities = [109,110,111,112];
-  //
-  // vals.length refers to the RANGE and not to the array, the array dim will always be -1
-  //
-  var last = responses.length;
-  responses = responses[last-1];
-  var i = 0;       // loop counter initialization
-  var n = [];      // index reference initialization
-  //
+  var n = [141, 147];  // List of form indices to update
+  for (i=0; i<n.length; i++){
+    addToFormDropdown(n[i], newAff);
+  }
   //------------------------------------------------------------------------------------------
-  // Check to see if this is a new Patient 
-  //
-  if (responses[1] == "Yes" & getPatientProperties(responses[3]) == null){
-    //
-    // If so, fill in the Patient properties in sourcePatients from that provided in the form
-    //
-    addPatient(responses[3, 4, 5, 6, 7, 8, 9, 10, 11]);
-    //
-    // Backfill the selected Research ID to simplify form generation
-    //
-    sheet.getRange(last, 3).setValue(responses[3]);
-    responses[2] = responses[3];
-    //
-  } else {
-    //
-    // Otherwise grab the Patient name from the latest response, get the patient properties...
-    //
-    var patientProperties = getPatientProperties(responses[2]);
-    //  
-    // ...and fill in the skipped form responses due to being a known patient
-    //   **This may need to be separated if they want a complete record of ALL age measurements**
-    //    **Split age information out from sourcePatients
-    //    **Create getPatientAge(){} to look for -
-    //          the latest entry, OR
-    //          add logic to prioritize "known" ages over "estimated" ages
-    //
-    // Fill Research ID, Species, Common Name, Sex, Age, Method of Aging, Age Confidence, Date of Birth, and Age Class
-    //
-    sheet.getRange(last, 3, 1, colsForPatients.length).setValues([patientProperties]);
-  }
-  //
-  //------------------------------------------------------------------------------------------
-  // Check to see if this is a new Affiliation
-  //
-  if (responses[102] == "(New Affiliation)" | responses[105] == "(New Affiliation)"){
-    //
-    // Change the entry of "(New Affiliation)" to that provided later in the form...
-    //
-    responses[102] = responses[103];
-    responses[105] = responses[103];
-    sheet.getRange(last, 103).setValue(responses[103]);
-    sheet.getRange(last, 106).setValue(responses[103]);
-    //
-    // ...and add that new option as a valid entry in the affiliation dropdowns.
-    //  ** Note this does not allow current users to CHANGE their affiliation.
-    //  ** This will have to be done as part of DQ SEA maintenance OR
-    //  ** through alteration of the form and structure.
-    //
-    addAffiliation(responses[103]);
-  }
-  // Check to see if this is a new Preparer
-  if (responses[104]=="(New Personnel)"){
-    //
-    // If so, match the names and affiliations to those provided in the form...
-    //
-    responses[104] = responses[100];
-    sheet.getRange(last, 105).setValue(responses[100]);    // New Name
-    //
-    // ...and check to see if there's a new affiliation to resolve.
-    // ...and add that person to the list for preparation of future forms.
-    //
-    addPreparer(responses[100, 101, 102]);
-  }
-  //
-  //------------------------------------------------------------------------------------------
-  // Fill out the location info from the chosen aquarium
-  //  Currently no support to automatically add facilities
-  //
-  var aquariumProperties = getLocationProperties(responses[12]);
-  for (i=0; i<colsForFacilities.length; i++){
-    sheet.getRange(last,colsForFacilities[i]).setValue(aquariumProperties[i]);
-  }
-  //
-  //------------------------------------------------------------------------------------------
-  // Fill out missing sample counts
-  //
-  //   - If blood samples were not collected, fill the missing collection statuses
-  if (sheet.getRange(last,23).getValue()=="No"){
-    sheet.getRange(last,28).setValue("No");
-    sheet.getRange(last,35).setValue("No");
-    sheet.getRange(last,43).setValue("No");
-  }
-  //      - Whole Blood
-  if (sheet.getRange(last,28).getValue()=="No"){
-    sheet.getRange(last,29).setValue(0);
-    sheet.getRange(last,30).setValue(0);
-    sheet.getRange(last,31).setValue("Not applicable");
-    sheet.getRange(last,113).setValue(0);
-  } else {
-    sheet.getRange(last,113).setValue(countSamples(responses.slice(28,30)));
-  }
-  //      - Plasma
-  if (sheet.getRange(last,35).getValue()=="No"){
-    sheet.getRange(last,36).setValue(0);
-    sheet.getRange(last,37).setValue(0);
-    sheet.getRange(last,38).setValue(0);
-    sheet.getRange(last,39).setValue("Not applicable");
-    sheet.getRange(last,114).setValue(0);
-  } else {
-    sheet.getRange(last, 114).setValue(countSamples(responses.slice(35,38)));
-  }
-  //      - Serum
-  if (sheet.getRange(last,43).getValue()=="No"){
-    sheet.getRange(last,44).setValue(0);
-    sheet.getRange(last,45).setValue(0);
-    sheet.getRange(last,46).setValue("Not applicable");
-    sheet.getRange(last,115).setValue(0);
-  } else {
-    sheet.getRange(last, 115).setValue(countSamples(responses.slice(43,45)));
-  }
-  //      - Milk
-  if (sheet.getRange(last,50).getValue()=="No"){
-    sheet.getRange(last,55).setValue(0);
-    sheet.getRange(last,56).setValue(0);
-    sheet.getRange(last,116).setValue(0);
-  } else {
-    sheet.getRange(last, 116).setValue(countSamples(responses.slice(54,56)));
-  }
-  var nTotal = sheet.getRange(last, 113, 1, 4).getValues();
-  sheet.getRange(last, 117).setValue(countSamples(nTotal[0]));
-  //
-  //------------------------------------------------------------------------------------------
-  // Get LAST permit
-  //
-  sheet.getRange(last, 118, 1, 5).setValues(getPermitInfo('last'));
-  //------------------------------------------------------------------------------------------
-  // Fill out the report template and send it if samples were recorded
-  //
-  // - refresh the responses list
-  if (testingmode){
-    Logger.log(responses);
-  } else {
-    // refresh responses
-    responses = sheet.getDataRange().getValues();
-    responses = responses[responses.length-1];
-    // - submit to fill and report routine
-    //     - array index 21 should be 'Were samples collected?'
-    //     - array index 106 should be 'Create a chain of custody document?'
-    // CURRENTLY NO ERROR TRAP FOR 'Yes' TO 'Were samples collected?' AND 'No' to each tissue
-    //  - maybe by countSamples(nTotal[0]) > 0 ?
-    if (responses[21] === 'Yes'){
-      if (responses[106] === 'Yes'){
-        fillAndSendReportTemplate(responses);
-      } else {
-        samplesCollectedNoChain(responses);
-      }
-    } else {
-      conditionUpdated(responses);
-    }
-  }
-  //
-  //------------------------------------------------------------------------------------------
-  // lastupdate: 20171014:1024                                                Jared M. Ragland
+  // lastupdate: 20171007:1045                                                Jared M. Ragland
   //                                                     NIST Marine ESB Data Tool Development
   //------------------------------------------------------------------------------------------
+}
+
+function addPatient(properties){
+  //------------------------------------------------------------------------------------------
+  // Fills the properties of a new Patient (by Research ID) from form responses.
+  //------------------------------------------------------------------------------------------
+  //
+  var testing = 'FALSE';
+  if (testing === 'TRUE'){
+    var properties = ['testRID','testSPP','testCN','testSEX','testAGE','testMETHOD','testCONFIDENCE','testDOB','testCLASS'];
+  }
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Form Responses');
+  var last = sheet.getLastRow();
+  //
+  //  Write responses for the new patient into the record to smooth future lookups
+  //
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('sourcePatients');
+  var n = sheet.getLastRow()+1;
+  sheet.getRange(n, 1).setValue(sheet.getRange(n-1,1).getValue()+1);
+  sheet.getRange(n, 2).setValue(properties[0]);
+  sheet.getRange(n, 3, 1, 9).setValues([properties]);
+  if (sheet.getRange(n,10).getValue == ''){
+    sheet.getRange(n,10).setValue('Unknown');
+  }
+  //
+  //  Update the form to reflect the new patient choice.
+  //
+  addToFormDropdown(6, properties[0]);
+  //------------------------------------------------------------------------------------------
+  // lastupdate: 20171007:0942                                                Jared M. Ragland
+  //                                                     NIST Marine ESB Data Tool Development
+  //------------------------------------------------------------------------------------------
+}
+
+function addPreparer(properties){
+  //------------------------------------------------------------------------------------------
+  // Fills the properties of new Personnel from form responses.
+  //------------------------------------------------------------------------------------------
+  //
+  //  Write responses for the new preparer into the record to smooth future lookups
+  //
+  var testing = 'FALSE';
+  if (testing === 'TRUE'){
+    var properties = ['testAdd','testAff','testEmail'];
+  }
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('sourcePersonnel');
+  var i = sheet.getLastRow()+1;
+  sheet.getRange(i,1).setValue(sheet.getRange(i-1,1).getValue()+1);
+  sheet.getRange(i,2,1,3).setValues([properties]);
+  sheet.getRange(i,5).setValue('Yes');
+  //
+  //  Update the form to reflect the new preparer choice.
+  //
+  var n = [33,35,68,70,146];  // List of form indices to update
+  for (i=0; i<n.length; i++){
+    addToFormDropdown(n[i], properties[0]);
+  }
+  //------------------------------------------------------------------------------------------
+  // lastupdate: 20170104:1305                                                Jared M. Ragland
+  //                                                     NIST Marine ESB Data Tool Development
+  //------------------------------------------------------------------------------------------
+}
+
+function addToFormDropdown(index, display){
+  //------------------------------------------------------------------------------------------
+  //  Adds the "display" value to the end of the dropdown options for choosing item "index".
+  //  The need for this could be avoided in the future by having the item populate on load.
+  //  These could benefit also from a sort, but sorting the choice objects is a pain... 
+  //  for loop choice[i].getValue() -> [], etc.etc.  No method exists at this point.
+  //  For now, the only workaround I could find to add a choice with navigation is to copy
+  //  the .getGotoPage() object from the first item in the list, copy the properties from 
+  //  the LAST item in the list (in this case '(New XXX)') and then write that back to the
+  //  bottom of the list.  This only affects adding affiliations and personnel for now, but 
+  //  may come in later.
+  //------------------------------------------------------------------------------------------
+  // 
+  var form = FormApp.openById('1S5nyZ867nnMHTrgo3CW0Nm-ta14C0Xm8gPCEVOnsGc0');
+  var items = form.getItems();
+  var item = items[index].asListItem();
+  var choices = item.getChoices();
+  var navEnabled = choices[choices.length-1].getGotoPage();
+  if (navEnabled === null){
+    choices.push(item.createChoice(display));
+  } else {
+    var navInfo1 = choices[0].getGotoPage();
+    var appendBack = choices[(choices.length-1)];
+    var display2 = appendBack.getValue();
+    var navInfo2 = appendBack.getGotoPage();
+    choices.pop();
+    choices.push(item.createChoice(display, navInfo1));
+    choices.push(item.createChoice(display2, navInfo2));
+  }
+  item.setChoices(choices);
+  //------------------------------------------------------------------------------------------
+  // lastupdate: 20170104:1338                                                Jared M. Ragland
+  //                                                     NIST Marine ESB Data Tool Development
+  //------------------------------------------------------------------------------------------
+}
+
+function getLocationProperties(locationName){
+  //------------------------------------------------------------------------------------------
+  // Gets the County, State, and Community from the aquarium chosen in form responses.
+  //------------------------------------------------------------------------------------------
+  //
+  //var locationName = 'Dolphin Quest Hawaii';
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('sourceLocations');
+  var locations = sheet.getDataRange().getValues();
+  //
+  // Cycle through the existing locations (from the dropdown on the form) and grab
+  //
+  for (var i=0; i<locations.length; i++){
+    if (locations[i][1] == locationName){
+      return sheet.getRange(i+1,3,1,4).getValues()[0];
+    }
+  }
+  return null;
+  //------------------------------------------------------------------------------------------
+  // lastupdate: 20170104:1109                                                Jared M. Ragland
+  //                                                     NIST Marine ESB Data Tool Development
+  //------------------------------------------------------------------------------------------
+}
+
+function getPatientProperties(researchID){
+  //------------------------------------------------------------------------------------------
+  // Gets the properties of a given Patient (by name) and returns them as an array.
+  //------------------------------------------------------------------------------------------
+  //
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('sourcePatients');
+  var patients = sheet.getDataRange().getValues();
+  //
+  // Cycle through the existing patients (from the dropdown on the form) and grab
+  //
+  for (var i=0; i<patients.length; i++){
+    if (patients[i][1]==researchID){
+      return sheet.getRange(i+1,2,1,10).getValues()[0];
+    }
+  }
+  return null;
+  //------------------------------------------------------------------------------------------
+  // lastupdate: 20170104:0856                                                Jared M. Ragland
+  //                                                     NIST Marine ESB Data Tool Development
+  //------------------------------------------------------------------------------------------
+}
+
+function getPersonnelProperties(personnelName){
+  //------------------------------------------------------------------------------------------
+  // Gets the properties of a given Patient (by name) and returns them as an array.
+  //------------------------------------------------------------------------------------------
+  //
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('sourcePersonnel');
+  var personnel = sheet.getDataRange().getValues();
+  //
+  // Cycle through the existing patients (from the dropdown on the form) and grab
+  //
+  for (var i=0; i<personnel.length; i++){
+    if (personnel[i][1]==personnelName){
+      return sheet.getRange(i+1,2,1,10).getValues()[0];
+    }
+  }
+  return null;
+  //------------------------------------------------------------------------------------------
+  // lastupdate: 20170104:0856                                                Jared M. Ragland
+  //                                                     NIST Marine ESB Data Tool Development
+  //------------------------------------------------------------------------------------------
+}
+
+function getPermitInfo(permitNumber){     // <- for latest, supply "last"
+  //------------------------------------------------------------------------------------------
+  // Returns the latest permit information for inclusion in the chain of custody footer.
+  //------------------------------------------------------------------------------------------
+  //
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('sourcePermits');
+  var permits = sheet.getDataRange().getValues();
+  //
+  // Cycle through the existing patients (from the dropdown on the form) and grab
+  //
+  if (permitNumber === 'last'){
+    return sheet.getRange(permits.length, 2,1,5).getValues();
+  } else {
+    for (var i=1; i<permits.length+1; i++){
+      if (permits[i][0]==permitNumber){
+        return sheet.getRange(i+1,2,1,5).getValues();
+      }
+    }
+  }
+  return null;
+  //------------------------------------------------------------------------------------------
+  // lastupdate: 20171002:1345                                                Jared M. Ragland
+  //                                                     NIST Marine ESB Data Tool Development
+  //------------------------------------------------------------------------------------------
+}
+
+function countSamples(counts){
+  //------------------------------------------------------------------------------------------
+  // Returns the total sample count, rounding partials to +1.
+  //------------------------------------------------------------------------------------------
+  //
+  return Math.ceil(
+    counts.reduce(
+      function (total, num){
+        return total + num;
+      }
+    )
+  );
+  //------------------------------------------------------------------------------------------
+  // lastupdate: 20171006:1525                                                Jared M. Ragland
+  //                                                     NIST Marine ESB Data Tool Development
+  //------------------------------------------------------------------------------------------
+}
+
+// Helper functions to list both responses and form items by index and name/title, and tie 
+//  them together by resolving their indices against one another.
+function listAll(){
+  listResponseHeaders();
+  listFormItems();
+}
+
+function listResponseHeaders(){
+  var sheetResponses = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Form Responses');
+  var cols = sheetResponses.getLastColumn();
+  var headers = sheetResponses.getSheetValues(1, 1, 1, cols);
+  var refResponses = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('refResponseHeaders');
+  refResponses.clear();
+  refResponses.getRange(1,1,1,3).setValues([["ArrayIndex","ColumnIndex","ResponseHeader"]]);
+  var temp = '';
+  for (var i=0; i<headers[0].length; i++){
+    temp = headers[0][i];
+    refResponses.getRange(i+2,1).setValue(temp);
+    refResponses.getRange(i+2,2).setValue(i);
+    refResponses.getRange(i+2,3).setValue(i+1);
+  }
+}
+function listFormItems(){
+  var form = FormApp.openById('1S5nyZ867nnMHTrgo3CW0Nm-ta14C0Xm8gPCEVOnsGc0');
+  var refFormItems = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('refFormItems');
+  refFormItems.clear()
+  refFormItems.getRange(1, 1, 1, 3).setValues([['Index','Title','Type']]);
+  var items = form.getItems();
+  for (var i=0; i<items.length; i++){
+    refFormItems.getRange(i+2,1).setValue(items[i].getTitle());
+    refFormItems.getRange(i+2,2).setValue(items[i].getIndex());
+    refFormItems.getRange(i+2,3).setValue(items[i].getType());
+  }  
+}
+//------------------------------------------------------------------------------------------
+// lastupdate: 20171006:1050                                                Jared M. Ragland
+//                                                     NIST Marine ESB Data Tool Development
+//------------------------------------------------------------------------------------------
+
+
+
+// Found from http://www.codesuck.com/2012/02/transpose-javascript-array-in-one-line.html
+// Transposes an array
+function transpose(a){
+  return a[0].map(function (_, c) { return a.map(function (r) { return r[c]; }); });
 }
