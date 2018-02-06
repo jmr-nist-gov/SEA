@@ -22,6 +22,17 @@ function onFormSubmit(){
   var n = [];      // index reference initialization
   //
   //------------------------------------------------------------------------------------------
+  // Replace any extraneous line feeds entered into PARAGRAPH_TEXT form items
+  //
+  var colsWithReturns = [34,42,49,60,108];
+  var sansReturns = "";
+  for (i=0; i<colsWithReturns.length; i++){
+    sansReturns = sheet.getRange(last, colsWithReturns[i]).getValue().replace(/\n/g, "; ");
+    sheet.getRange(last, colsWithReturns[i]).setValue(sansReturns);
+    responses[colsWithReturns[i]-1] = sansReturns;
+  }
+  //
+  //------------------------------------------------------------------------------------------
   // Check to see if this is a new Patient 
   //
   if (responses[1] == "Yes" & getPatientProperties(responses[3]) == null){
