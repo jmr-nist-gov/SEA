@@ -11,6 +11,9 @@ function onFormSubmit(){
   //
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Form Responses');
   var responses = sheet.getDataRange().getValues();
+  var consolidated = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('consolidated');
+  var clR = consolidated.getLastRow();
+  var clC = consolidated.getLastColumn();
   var colsForPatients = [4,4,5,6,7,8,9,10,11,12];
   var colsForFacilities = [109,110,111,112];
   //
@@ -168,6 +171,8 @@ function onFormSubmit(){
     // refresh responses
     responses = sheet.getDataRange().getValues();
     responses = responses[responses.length-1];
+    // - add to archive
+    consolidated.getRange(clR, 1, 1, clC).copyTo(consolidated.getRange(clR+1, 1, 1, clC));
     // - submit to fill and report routine
     //     - array index 21 should be 'Were samples collected?'
     //     - array index 106 should be 'Create a chain of custody document?'
