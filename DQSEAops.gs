@@ -187,10 +187,14 @@ function onFormSubmit(){
     } else {
       conditionUpdated(responses);
     }
+    // Copy new entry to consolidated
+    consolidated.getRange(clR, 1, 1, clC).copyTo(consolidated.getRange(clR+1, 1, 1, clC));
+    // Add export record for FW integration
+    exportToFW("Dolphin Quest", false, null);
   }
   //
   //------------------------------------------------------------------------------------------
-  // lastupdate: 20171014:1024                                                Jared M. Ragland
+  // lastupdate: 20180212:1320                                                Jared M. Ragland
   //                                                     NIST Marine ESB Data Tool Development
   //------------------------------------------------------------------------------------------
 }

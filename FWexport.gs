@@ -203,7 +203,7 @@ function exportToFW(project, buildAll, buildSpecific){
     // Build the export
     // Clear it if necessary
     if (buildAll & destLR > 1) {
-      dest.getRange(2, 0, destLR-2, out[0].length).clearContents();
+      dest.getRange(2, 1, destLR-2, out[0].length).clear();
       dest.getRange(2, 1, out.length, out[0].length).setValues(out);
     } else {
       dest.getRange(destLR+1, 1, out.length, out[0].length).setValues(out);
@@ -262,6 +262,9 @@ function buildRecordDirect(dat, srcColIndices, destColIndices){
   var out = [];
   for (var i=0; i<srcColIndices.length; i++) {
     out[destColIndices[i]-1] = dat[srcColIndices[i]-1];
+    if (srcColIndices[i] == 13) {
+      out[destColIndices[i]-1] = out[destColIndices[i]-1].replace("Dolphin Quest ", "DQ-");
+    }
   }
   return (out);
   // Built 20180208:0830
