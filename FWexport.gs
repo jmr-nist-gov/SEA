@@ -1,7 +1,7 @@
 function exportToFW(project, buildAll, buildSpecific){
-  var project = "Dolphin Quest";  // Override the project supplied, comment to active function argument
-  var buildAll = true;   // Set true to regenerate ALL records, comment to activate function argument
-  var buildSpecific = null;  // Grab a specific consolidated record, set null for last, comment to active function argument
+  //var project = "Dolphin Quest";  // Override the project supplied, comment to active function argument
+  //var buildAll = true;   // Set true to regenerate ALL records, comment to activate function argument
+  //var buildSpecific = null;  // Grab a specific consolidated record, set null for last, comment to active function argument
   var src = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('consolidated'),
       dat = src.getDataRange().getValues();
   var lastDat = dat.length;
@@ -82,12 +82,15 @@ function exportToFW(project, buildAll, buildSpecific){
       record = [];
       tissuei = 0;
       // Get the correct record in the dataset
-      if (n<ndat) {
+      if (n<(ndat-1)) {
         tempDat = dat[n].slice(0);
       } else {
-        tempDat = dat[lastDat].slice(0);
+        if (buildSpecific != null) {
+          tempDat = dat[buildSpecific-1].slice(0);
+        } else {
+          tempDat = dat[lastDat].slice(0);
+        }
       }
-      if (buildSpecific != null) {tempDat = dat[buildSpecific-1].slice(0);}
       // Those that will always go in need to be repeated for the total number of samples
       direct = buildRecordDirect(tempDat, srcColsDirect, destColsDirect);
       // Parse the permit information into a single column "Federal Permit"
@@ -212,6 +215,7 @@ function exportToFW(project, buildAll, buildSpecific){
   // Start build 20180205
   // Tested single 20180209:1500 - pass
   // Tested multiple entry 20180212:1215 - pass
+  // Addressed issue during production where the first record was parsed rather than the last 20180312:1110 - pass
 }
 
 function splitDate(dateToSplit){
