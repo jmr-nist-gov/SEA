@@ -263,9 +263,14 @@ function fillAndSendReportTemplate(responses){
   //  ...and send the email.
   //
   //    - always send it to those in this list:
-  var recipient = "jared.ragland@noaa.gov";
-  //recipient += ",colleen.bryan@noaa.gov";
-  //recipient += ",jsmith73@my.hpu.edu";
+  var recipient = "";
+  if (responses[12]=="Dolphin Quest Hawaii") {
+    recipient += "nlambert@dolphinquest.com,kjohnson@dolphinquest.com";
+  } else if (responses[12]=="Dolphin Quest Oahu") {
+    recipient += "jrocho@dolphinquest.com,nwest@dolphinquest.com";
+    recipient += ',' + getPersonnelProperties(responses[104])[2];
+  }
+  var ccList = "jared.ragland@noaa.gov,colleen.bryan@noaa.gov";
   //    - and then add the form preparer
   //recipient += ',' + getPersonnelProperties(responses[104])[3];
   //    - optionally send it to anyone else
@@ -275,6 +280,7 @@ function fillAndSendReportTemplate(responses){
   if (sendmail) {
     MailApp.sendEmail({
       to: recipient, 
+      cc: ccList,
       subject: subject, 
       body: emailBody,
       htmlBody: emailBodyasHTML, 
@@ -288,7 +294,7 @@ function fillAndSendReportTemplate(responses){
   email.saveAndClose();
   DriveApp.getFileById(emailID).setTrashed(true);
   //------------------------------------------------------------------------------------------
-  // lastupdate: 20171013:0955                                                Jared M. Ragland
+  // lastupdate: 20180319:1000                                                Jared M. Ragland
   //                                                     NIST Marine ESB Data Tool Development
   //------------------------------------------------------------------------------------------
 }

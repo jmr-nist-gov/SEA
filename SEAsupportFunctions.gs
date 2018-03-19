@@ -167,12 +167,12 @@ function getPersonnelProperties(personnelName){
   //
   for (var i=0; i<personnel.length; i++){
     if (personnel[i][1]==personnelName){
-      return sheet.getRange(i+1,2,1,10).getValues()[0];
+      return sheet.getRange(i+1,2,1,4).getValues()[0];
     }
   }
   return null;
   //------------------------------------------------------------------------------------------
-  // lastupdate: 20170104:0856                                                Jared M. Ragland
+  // lastupdate: 20180319:1000                                                Jared M. Ragland
   //                                                     NIST Marine ESB Data Tool Development
   //------------------------------------------------------------------------------------------
 }
