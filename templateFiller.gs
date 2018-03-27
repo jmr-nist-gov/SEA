@@ -189,6 +189,10 @@ function fillAndSendReportTemplate(responses){
     }
     i++;
   }
+  //   - populate the Time Point
+  if (responses[122] != '') {
+    reportBody.replaceText('<<DQTP>>', '(TP' + responses[122].toString() + ')')
+  }
   //  
   //  ...convert to a .pdf...
   //
@@ -228,6 +232,10 @@ function fillAndSendReportTemplate(responses){
       emailBody.replaceText('<<entry' + i + '>>', responses[forEmail[i]]);
     }
     i++;
+  }
+  //   - populate the Time Point
+  if (responses[122] != '') {
+    emailBody.replaceText('<<DQTP>>', ' (TP' + responses[122].toString() + ')')
   }
   //
   //  ...then make a copy of that text in HTML format to preserve formatting...
@@ -295,6 +303,7 @@ function fillAndSendReportTemplate(responses){
   DriveApp.getFileById(emailID).setTrashed(true);
   //------------------------------------------------------------------------------------------
   // lastupdate: 20180319:1000                                                Jared M. Ragland
+  // added support for DQ Time Point - 20180327:1331
   //                                                     NIST Marine ESB Data Tool Development
   //------------------------------------------------------------------------------------------
 }

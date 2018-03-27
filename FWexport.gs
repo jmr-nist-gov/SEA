@@ -1,6 +1,6 @@
 function exportToFW(project, buildAll, buildSpecific){
   //var project = "Dolphin Quest";  // Override the project supplied, comment to active function argument
-  //var buildAll = true;   // Set true to regenerate ALL records, comment to activate function argument
+  //var buildAll = false;   // Set true to regenerate ALL records, comment to activate function argument
   //var buildSpecific = null;  // Grab a specific consolidated record, set null for last, comment to active function argument
   var src = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('consolidated'),
       dat = src.getDataRange().getValues();
@@ -120,7 +120,7 @@ function exportToFW(project, buildAll, buildSpecific){
             
             // Remove the first two entries to leave it blank for MESB to fill in GUAID and DQ Time Point
             record[0] = null;
-            record[1] = null;  // Time point, when included in SEA, remove this
+            //record[1] = null;  // Time point, when included in SEA, remove this
             
             // Set the tissue type
             record[4] = tissueTypes[tissuei];
@@ -212,10 +212,11 @@ function exportToFW(project, buildAll, buildSpecific){
       dest.getRange(destLR+1, 1, out.length, out[0].length).setValues(out);
     }
   }
-  // Start build 20180205
-  // Tested single 20180209:1500 - pass
-  // Tested multiple entry 20180212:1215 - pass
-  // Addressed issue during production where the first record was parsed rather than the last 20180312:1110 - pass
+  // 20180205      Start build
+  // 20180209:1500 Tested single - pass
+  // 20180212:1215 Tested multiple entry - pass
+  // 20180312:1110 Addressed issue during production where the first record was parsed rather than the last - pass
+  // 20180327:1255 Activated support for DQ Time Point inclusion - pass
 }
 
 function splitDate(dateToSplit){

@@ -3,12 +3,13 @@ function addAffiliation(newAff){
   // Adds a new affiliation from form responses.
   //------------------------------------------------------------------------------------------
   //
-  var n = [141, 147];  // List of form indices to update
+  var n = [142, 148];  // List of form indices to update
   for (i=0; i<n.length; i++){
     addToFormDropdown(n[i], newAff);
   }
   //------------------------------------------------------------------------------------------
   // lastupdate: 20171007:1045                                                Jared M. Ragland
+  // added support for DQ Time Point - updated indices 20180327:1212
   //                                                     NIST Marine ESB Data Tool Development
   //------------------------------------------------------------------------------------------
 }
@@ -41,6 +42,7 @@ function addPatient(properties){
   addToFormDropdown(6, properties[0]);
   //------------------------------------------------------------------------------------------
   // lastupdate: 20171007:0942                                                Jared M. Ragland
+  // added support for DQ Time Point - updated indices 20180327:1215
   //                                                     NIST Marine ESB Data Tool Development
   //------------------------------------------------------------------------------------------
 }
@@ -64,12 +66,13 @@ function addPreparer(properties){
   //
   //  Update the form to reflect the new preparer choice.
   //
-  var n = [33,35,68,70,146];  // List of form indices to update
+  var n = [34,36,69,71,147];  // List of form indices to update
   for (i=0; i<n.length; i++){
     addToFormDropdown(n[i], properties[0]);
   }
   //------------------------------------------------------------------------------------------
   // lastupdate: 20170104:1305                                                Jared M. Ragland
+  // added support for DQ Time Point - updated indices 20180327:1218
   //                                                     NIST Marine ESB Data Tool Development
   //------------------------------------------------------------------------------------------
 }
