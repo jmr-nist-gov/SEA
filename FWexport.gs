@@ -192,6 +192,13 @@ function exportToFW(project, buildAll, buildSpecific){
             }
             tempSrcArr = [];
             
+            // Pick a container type
+            if (record[5] > 1) {
+              record.push("7.5 mL Teflon")
+            } else {
+              record.push("2.5 mL cryovial")
+            }
+            
             // Send record to output array, refresh record, and increment output array
             out[outi] = record.slice(0);
             record = [];
@@ -217,6 +224,7 @@ function exportToFW(project, buildAll, buildSpecific){
   // 20180212:1215 Tested multiple entry - pass
   // 20180312:1110 Addressed issue during production where the first record was parsed rather than the last - pass
   // 20180327:1255 Activated support for DQ Time Point inclusion - pass
+  // 20180327:1437 Added support for container type auto selection - pass
 }
 
 function splitDate(dateToSplit){
