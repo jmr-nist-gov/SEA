@@ -114,7 +114,7 @@ function exportToFW(project, buildAll, buildSpecific){
           xSample = tempDat[srcColnSamples[i]];
           if (xSample == '') {xSample = 0;}
         }
-        if (nSamples > 0){
+        if (nSamples > 0 || xSample > 0){ 
           for (ii=0; ii<(nSamples + Math.ceil(xSample)); ii++){
             record = direct.slice(0);
             
@@ -225,6 +225,7 @@ function exportToFW(project, buildAll, buildSpecific){
   // 20180312:1110 Addressed issue during production where the first record was parsed rather than the last - pass
   // 20180327:1255 Activated support for DQ Time Point inclusion - pass
   // 20180327:1437 Added support for container type auto selection - pass
+  // 20180406:0910 Bug fix to pick up partial aliquot with no full aliquot of same container type - pass
 }
 
 function splitDate(dateToSplit){
