@@ -4,6 +4,7 @@ function exportToFW(project, buildAll, buildSpecific){
   //var buildSpecific = null;  // Grab a specific consolidated record, set null for last, comment to active function argument
   var src = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('consolidated'),
       dat = src.getDataRange().getValues();
+  var GUAIDlist = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('GUAIDsToBeCollected').getDataRange().getValues();;
   var lastDat = dat.length;
   dat = dat.slice(2, lastDat);
   lastDat = dat.length -1;
@@ -37,6 +38,7 @@ function exportToFW(project, buildAll, buildSpecific){
       xSample = null,
       i = 0,
       ii = 0,
+      GUAIDi = 0,
       n = 0,
       ndat = 0,
       si = 0,
@@ -194,9 +196,25 @@ function exportToFW(project, buildAll, buildSpecific){
             
             // Pick a container type
             if (record[5] > 1) {
-              record.push("7.5 mL Teflon")
+              record.push("7 mL Teflon jar")
             } else {
-              record.push("2.5 mL cryovial")
+              record.push("2 mL cryovial")
+            }
+            
+            // Predict a globally unique aliquot id
+            for (GUAIDi = 0; GUAIDi < GUAIDlist.length; GUAIDi++){
+              if (GUAIDlist[GUAIDi][1] == record[1] &&
+                  GUAIDlist[GUAIDi][2] == record[2] &&
+                  GUAIDlist[GUAIDi][3] == parseInt(record[3].slice(-4)) &&
+                  GUAIDlist[GUAIDi][4] == record[4] &&
+                  GUAIDlist[GUAIDi][5] == record[52] &&
+                  GUAIDlist[GUAIDi][6] == false) {
+                    // Set the record GUAID
+                    record[0] = GUAIDlist[GUAIDi][0];
+                    // Set the COLLECTED array value to 'true' for this aliquot ID
+                    GUAIDlist[GUAIDi][6] = true;
+                    GUAIDi = GUAIDlist.length;
+              }
             }
             
             // Send record to output array, refresh record, and increment output array
@@ -206,6 +224,7 @@ function exportToFW(project, buildAll, buildSpecific){
           }
         }
         // Move to the next tissue
+        Logger.log(tissueTypes[tissuei]);
         tissuei ++;
       }
     }
@@ -226,6 +245,7 @@ function exportToFW(project, buildAll, buildSpecific){
   // 20180327:1255 Activated support for DQ Time Point inclusion - pass
   // 20180327:1437 Added support for container type auto selection - pass
   // 20180406:0910 Bug fix to pick up partial aliquot with no full aliquot of same container type - pass
+  // 20180411:1618 Added support for globally unique aliquot ID prediction of recorded samples - pass
 }
 
 function splitDate(dateToSplit){
